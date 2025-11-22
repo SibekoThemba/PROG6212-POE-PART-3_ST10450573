@@ -1,0 +1,122 @@
+﻿@{
+    ViewData["Title"] = "Lecturer Management";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-user-graduate me-2"></i>Lecturer Management
+        </h2>
+        <a class="btn btn-outline-secondary" asp-action="HRView">
+            <i class="fas fa-arrow-left me-2"></i>Back to HR Dashboard
+        </a>
+    </div>
+
+    @if (ViewBag.LecturerStats != null && ViewBag.LecturerStats.Count > 0)
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Lecturer Performance Overview
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Lecturer</th>
+                                <th>Email</th>
+                                <th>Total Claims</th>
+                                <th>Total Amount</th>
+                                <th>Pending</th>
+                                <th>Approved</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in ViewBag.LecturerStats)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@item.Lecturer.FullName</td>
+                                    <td>@item.Lecturer.Email</td>
+                                    <td>@item.TotalClaims</td>
+                                    <td class="text-success fw-bold">R @item.TotalAmount.ToString("N2")</td>
+                                    <td>
+                                        <span class="badge bg-warning">@item.PendingClaims</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">@item.ApprovedClaims</span>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var approvalRate = item.TotalClaims > 0 ?
+                                            (item.ApprovedClaims * 100.0 / item.TotalClaims) : 0;
+                                            var badgeClass = approvalRate >= 80 ? "bg-success" :
+                                            approvalRate >= 60 ? "bg-warning" : "bg-danger";
+                                        }
+                                        <span class="badge @badgeClass">@approvalRate.ToString("0")%</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h4 class="mb-0">@ViewBag.LecturerStats.Count</h4>
+                        <small>Total Lecturers</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h4 class="mb-0">
+                            @{
+                                int totalClaims = 0;
+                                foreach (var item in ViewBag.LecturerStats)
+                                {
+                                    totalClaims += item.TotalClaims;
+                                }
+                            }
+                            @totalClaims
+                        </h4>
+                        <small>Total Claims</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h4 class="mb-0">
+                            @{
+                                decimal totalAmount = 0;
+                                foreach (var item in ViewBag.LecturerStats)
+                                {
+                                    totalAmount += item.TotalAmount;
+                                }
+                            }
+                            R @totalAmount.ToString("N2")
+                        </h4>
+                        <small>Total Processed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">
+            <i class="fas fa-user-graduate fa-2x mb-3"></i>
+            <h4>No Lecturer Data</h4>
+            <p>No lecturers are currently registered in the system.</p>
+        </div>
+    }
+</div>

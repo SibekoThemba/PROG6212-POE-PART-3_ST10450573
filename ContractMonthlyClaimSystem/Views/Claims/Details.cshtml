@@ -1,0 +1,116 @@
+﻿@model ContractMonthlyClaimSystem.Models.MonthlyClaim
+
+@{
+    ViewData["Title"] = "Claim Details";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Claim Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Claim Information</h6>
+                            <dl class="row">
+                                <dt class="col-sm-5">Claim ID:</dt>
+                                <dd class="col-sm-7">@Model.MonthlyClaimId</dd>
+
+                                <dt class="col-sm-5">Lecturer:</dt>
+                                <dd class="col-sm-7">@Model.Lecturer?.FullName</dd>
+
+                                <dt class="col-sm-5">Claim Month:</dt>
+                                <dd class="col-sm-7">@Model.ClaimMonth.ToString("MMMM yyyy")</dd>
+
+                                <dt class="col-sm-5">Submitted Date:</dt>
+                                <dd class="col-sm-7">@Model.SubmittedDate.ToString("dd/MM/yyyy HH:mm")</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Financial Details</h6>
+                            <dl class="row">
+                                <dt class="col-sm-5">Hours Worked:</dt>
+                                <dd class="col-sm-7">@Model.HoursWorked</dd>
+
+                                <dt class="col-sm-5">Hourly Rate:</dt>
+                                <dd class="col-sm-7">R @Model.HourlyRate</dd>
+
+                                <dt class="col-sm-5">Total Amount:</dt>
+                                <dd class="col-sm-7 text-success fw-bold">R @(Model.HoursWorked* Model.HourlyRate)</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-muted">Status & Review</h6>
+                            <dl class="row">
+                                <dt class="col-sm-3">Status:</dt>
+                                <dd class="col-sm-9">
+                                    <span class="badge
+                                        @(Model.Status == ClaimStatus.Approved ? "bg-success" :
+                                                                                    Model.Status == ClaimStatus.Rejected ? "bg-danger" :
+                                                                                    Model.Status == ClaimStatus.Paid ? "bg-info" : "bg-warning")">
+                                        @Model.Status
+                                    </span>
+                                </dd>
+
+                                @if (!string.IsNullOrEmpty(Model.ReviewedBy))
+                                {
+                                    <dt class="col-sm-3">Reviewed By:</dt>
+                                    <dd class="col-sm-9">@Model.ReviewedBy</dd>
+
+                                    <dt class="col-sm-3">Reviewed Date:</dt>
+                                    <dd class="col-sm-9">@Model.ReviewedDate?.ToString("dd/MM/yyyy HH:mm")</dd>
+                                }
+
+                                @if (!string.IsNullOrEmpty(Model.RejectionReason))
+                                {
+                                    <dt class="col-sm-3">Rejection Reason:</dt>
+                                    <dd class="col-sm-9 text-danger">@Model.RejectionReason</dd>
+                                }
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="text-muted">Additional Notes</h6>
+                                <div class="alert alert-light border">
+                                    @Model.AdditionalNotes
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.SupportingDocumentPath))
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h6 class="text-muted">Supporting Document</h6>
+                                <a class="btn btn-outline-primary" asp-action="DownloadDocument" asp-route-id="@Model.MonthlyClaimId">
+                                    <i class="fas fa-download"></i> Download @Model.OriginalFileName
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+                            @if (User.IsInRole("ProgrammeCoordinator") || User.IsInRole("AcademicManager"))
+                            {
+                                <a class="btn btn-primary" asp-action="Approve" asp-route-id="@Model.MonthlyClaimId">Review Claim</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

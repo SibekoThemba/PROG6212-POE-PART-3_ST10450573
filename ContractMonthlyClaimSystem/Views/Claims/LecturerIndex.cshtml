@@ -1,0 +1,83 @@
+﻿@model IEnumerable<ContractMonthlyClaimSystem.Models.MonthlyClaim>
+
+@{
+    ViewData["Title"] = "My Claims";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">My Claims</h2>
+        <a class="btn btn-success" asp-action="Create">
+            <i class="fas fa-plus-circle"></i> Submit New Claim
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h4>No Claims Found</h4>
+            <p>You haven't submitted any claims yet. Click the button above to get started.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Claim History</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Claim Month</th>
+                                <th>Hours</th>
+                                <th>Rate</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@item.ClaimMonth.ToString("MMM yyyy")</td>
+                                    <td>@item.HoursWorked</td>
+                                    <td>R @item.HourlyRate</td>
+                                    <td class="text-success fw-bold">R @(item.HoursWorked* item.HourlyRate)</td>
+                                    <td>
+                                        <span class="badge
+                                                    @(item.Status == ClaimStatus.Approved ? "bg-success" :
+                                                                                            item.Status == ClaimStatus.Rejected ? "bg-danger" :
+                                                                                            item.Status == ClaimStatus.Paid ? "bg-info" : "bg-warning")">
+                                    @item.Status
+                                </span>
+                            </td>
+                            <td>@item.SubmittedDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a class="btn btn-outline-info" asp-action="Details" asp-route-id="@item.MonthlyClaimId"
+                                       title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if (!string.IsNullOrEmpty(item.SupportingDocumentPath))
+                                            {
+                                                <a class="btn btn-outline-secondary" asp-action="DownloadDocument" asp-route-id="@item.MonthlyClaimId"
+                                                   title="Download Document">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>

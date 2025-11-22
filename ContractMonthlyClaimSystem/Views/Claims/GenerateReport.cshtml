@@ -1,0 +1,183 @@
+﻿@{
+    ViewData["Title"] = "Generate Reports";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-chart-bar me-2"></i>Financial Reports
+        </h2>
+        <a class="btn btn-outline-secondary" asp-action="HRView">
+            <i class="fas fa-arrow-left me-2"></i>Back to HR Dashboard
+        </a>
+    </div>
+
+    <!-- Report Type Selector -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Report Type</h5>
+        </div>
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a class="btn @(ViewBag.ReportType == "monthly" ? "btn-primary" : "btn-outline-primary")"
+                   asp-action="GenerateReport" asp-route-reportType="monthly">
+                    Monthly Summary
+                </a>
+                <a class="btn @(ViewBag.ReportType == "lecturer" ? "btn-primary" : "btn-outline-primary")"
+                   asp-action="GenerateReport" asp-route-reportType="lecturer">
+                    By Lecturer
+                </a>
+                <a class="btn @(ViewBag.ReportType == "status" ? "btn-primary" : "btn-outline-primary")"
+                   asp-action="GenerateReport" asp-route-reportType="status">
+                    Status Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (ViewBag.MonthlyReportData != null && ViewBag.MonthlyReportData.Count > 0)
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-excel me-2"></i>
+                    @(ViewBag.ReportType == "monthly" ? "Monthly Claims Report" :
+                                    ViewBag.ReportType == "lecturer" ? "Lecturer Performance Report" : "Status Summary Report")
+            </h5>
+            <div class="btn-group">
+                <button class="btn btn-light btn-sm" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i>Print
+                </button>
+                <button class="btn btn-light btn-sm" onclick="exportToExcel()">
+                    <i class="fas fa-download me-1"></i>Export
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="reportTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Period</th>
+                            <th>Total Claims</th>
+                            <th>Total Amount</th>
+                            <th>Approved</th>
+                            <th>Paid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ViewBag.MonthlyReportData)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@item.Period</td>
+                                    <td>@item.TotalClaims</td>
+                                    <td class="text-success fw-bold">R @item.TotalAmount.ToString("N2")</td>
+                                    <td><span class="badge bg-warning">@item.ApprovedCount</span></td>
+                                    <td><span class="badge bg-success">@item.PaidCount</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td><strong>@ViewBag.TotalClaims</strong></td>
+                                <td class="text-success fw-bold">
+                                    <strong>R @ViewBag.TotalAmount.ToString("N2")</strong>
+                                </td>
+                                <td><strong>@ViewBag.TotalApproved</strong></td>
+                                <td><strong>@ViewBag.TotalPaid</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Monthly Distribution</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="monthlyChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Status Overview</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">
+            <i class="fas fa-chart-line fa-2x mb-3"></i>
+            <h4>No Report Data Available</h4>
+            <p>Generate reports once claims have been processed through the system.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function exportToExcel() {
+            alert('Excel export functionality would be implemented here. This would generate a downloadable Excel file with the report data.');
+        }
+
+        // Simple chart implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            const monthlyCtx = document.getElementById('monthlyChart');
+            const statusCtx = document.getElementById('statusChart');
+
+            if (monthlyCtx) {
+                const monthlyChart = new Chart(monthlyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Total Amount (R)',
+                            data: [12000, 19000, 15000, 18000, 22000, 17000],
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (statusCtx) {
+                const statusChart = new Chart(statusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Approved', 'Paid'],
+                        datasets: [{
+                            data: [@ViewBag.TotalApproved, @ViewBag.TotalPaid],
+                            backgroundColor: [
+                                'rgba(255, 205, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)'
+                            ]
+                        }]
+                    }
+                });
+            }
+        });
+    </script>
+}

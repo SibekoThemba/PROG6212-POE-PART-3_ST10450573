@@ -1,0 +1,137 @@
+﻿@model ContractMonthlyClaimSystem.Models.MonthlyClaim
+
+@{
+    ViewData["Title"] = "Review Claim";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">Review Claim #@Model.MonthlyClaimId</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Claim Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Claim Information</h6>
+                            <dl class="row">
+                                <dt class="col-sm-5">Lecturer:</dt>
+                                <dd class="col-sm-7 fw-bold">@Model.Lecturer?.FullName</dd>
+
+                                <dt class="col-sm-5">Claim Month:</dt>
+                                <dd class="col-sm-7">@Model.ClaimMonth.ToString("MMMM yyyy")</dd>
+
+                                <dt class="col-sm-5">Submitted Date:</dt>
+                                <dd class="col-sm-7">@Model.SubmittedDate.ToString("dd/MM/yyyy HH:mm")</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Financial Details</h6>
+                            <dl class="row">
+                                <dt class="col-sm-5">Hours Worked:</dt>
+                                <dd class="col-sm-7">@Model.HoursWorked</dd>
+
+                                <dt class="col-sm-5">Hourly Rate:</dt>
+                                <dd class="col-sm-7">R @Model.HourlyRate</dd>
+
+                                <dt class="col-sm-5">Total Amount:</dt>
+                                <dd class="col-sm-7 text-success fw-bold">R @(Model.HoursWorked* Model.HourlyRate)</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted">Additional Notes</h6>
+                                <div class="alert alert-light border">
+                                    @Model.AdditionalNotes
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.SupportingDocumentPath))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted">Supporting Document</h6>
+                                <a class="btn btn-outline-primary" asp-action="DownloadDocument" asp-route-id="@Model.MonthlyClaimId">
+                                    <i class="fas fa-download"></i> Download @Model.OriginalFileName
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Approval Form -->
+                    <form asp-action="Approve" method="post">
+                        <input type="hidden" name="id" value="@Model.MonthlyClaimId" />
+
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted">Decision</h6>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="isApproved" id="approve" value="true" checked>
+                                    <label class="form-check-label text-success fw-bold" for="approve">
+                                        <i class="fas fa-check-circle"></i> Approve Claim
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="isApproved" id="reject" value="false">
+                                    <label class="form-check-label text-danger fw-bold" for="reject">
+                                        <i class="fas fa-times-circle"></i> Reject Claim
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rejection Reason (shown only when reject is selected) -->
+                        <div class="row mb-4" id="rejectionReasonSection" style="display: none;">
+                            <div class="col-12">
+                                <label for="rejectionReason" class="form-label fw-bold text-danger">Rejection Reason</label>
+                                <textarea class="form-control" id="rejectionReason" name="rejectionReason"
+                                          rows="3" placeholder="Please provide a reason for rejection..."
+                                          required></textarea>
+                                <div class="form-text">This reason will be visible to the lecturer.</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-paper-plane"></i> Submit Decision
+                                </button>
+                                <a class="btn btn-outline-secondary" asp-action="Index">
+                                    <i class="fas fa-arrow-left"></i> Back to List
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Show/hide rejection reason based on radio selection
+            $('input[name="isApproved"]').change(function () {
+                if ($('#reject').is(':checked')) {
+                    $('#rejectionReasonSection').show();
+                    $('#rejectionReason').prop('required', true);
+                } else {
+                    $('#rejectionReasonSection').hide();
+                    $('#rejectionReason').prop('required', false);
+                }
+            });
+
+            // Trigger change on page load
+            $('input[name="isApproved"]:checked').trigger('change');
+        });
+    </script>
+}

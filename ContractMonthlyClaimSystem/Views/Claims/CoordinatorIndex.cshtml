@@ -1,0 +1,55 @@
+﻿@model IEnumerable<ContractMonthlyClaimSystem.Models.MonthlyClaim>
+
+@{
+    ViewData["Title"] = "Pending Claims for Review";
+}
+
+<div class="container">
+    <h2>Pending Claims for Review</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No pending claims to review.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Lecturer ID</th> <!-- Changed from Lecturer Name -->
+                        <th>Claim Month</th>
+                        <th>Hours Worked</th>
+                        <th>Hourly Rate</th>
+                        <th>Total Amount</th>
+                        <th>Submitted Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.LecturerId</td> <!-- Show LecturerId instead of FullName -->
+                            <td>@item.ClaimMonth.ToString("MMMM yyyy")</td>
+                            <td>@item.HoursWorked</td>
+                            <td>R @item.HourlyRate</td>
+                            <td>R @(item.HoursWorked* item.HourlyRate)</td>
+                            <td>@item.SubmittedDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@item.MonthlyClaimId">Review</a>
+                                <a class="btn btn-sm btn-success" asp-action="Approve" asp-route-id="@item.MonthlyClaimId">Approve/Reject</a>
+                                @if (!string.IsNullOrEmpty(item.SupportingDocumentPath))
+                                {
+                                    <a class="btn btn-sm btn-secondary" asp-action="DownloadDocument" asp-route-id="@item.MonthlyClaimId">Document</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

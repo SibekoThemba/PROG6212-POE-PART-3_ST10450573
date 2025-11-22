@@ -1,0 +1,224 @@
+﻿@model IEnumerable<ContractMonthlyClaimSystem.Models.MonthlyClaim>
+@{
+    ViewData["Title"] = "HR - Payment Processing";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-users-cog me-2"></i>HR Dashboard - Payment Processing
+        </h2>
+        <div class="btn-group">
+            <a class="btn btn-outline-info" asp-action="GenerateReport">
+                <i class="fas fa-chart-bar me-2"></i>Generate Report
+            </a>
+            <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">
+                <i class="fas fa-home me-2"></i>Home
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    @if (ViewBag.Stats != null)
+    {
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0">@ViewBag.Stats.TotalApproved</h4>
+                                <small>Approved Claims</small>
+                            </div>
+                            <i class="fas fa-file-invoice-dollar fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0">R @ViewBag.Stats.TotalAmount.ToString("N2")</h4>
+                                <small>Total Amount</small>
+                            </div>
+                            <i class="fas fa-money-bill-wave fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0">@ViewBag.Stats.LecturersCount</h4>
+                                <small>Lecturers</small>
+                            </div>
+                            <i class="fas fa-user-graduate fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="mb-0">@ViewBag.Stats.OldestClaim.ToString("MMM yyyy")</h4>
+                                <small>Oldest Claim</small>
+                            </div>
+                            <i class="fas fa-calendar-alt fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h4>No Approved Claims</h4>
+            <p>There are no approved claims pending payment processing.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Approved Claims Ready for Payment
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Claim ID</th>
+                                <th>Lecturer</th>
+                                <th>Claim Month</th>
+                                <th>Hours</th>
+                                <th>Rate</th>
+                                <th>Total Amount</th>
+                                <th>Submitted</th>
+                                <th>Reviewed By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">#@item.MonthlyClaimId</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-graduate text-muted me-2"></i>
+                                            @item.Lecturer?.FullName
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold">@item.ClaimMonth.ToString("MMM yyyy")</td>
+                                    <td>@item.HoursWorked</td>
+                                    <td>R @item.HourlyRate</td>
+                                    <td class="text-success fw-bold">R @(item.HoursWorked* item.HourlyRate)</td>
+                                    <td>@item.SubmittedDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <span class="badge bg-info">@item.ReviewedBy</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a class="btn btn-outline-info" asp-action="Details" asp-route-id="@item.MonthlyClaimId"
+                                               title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <form asp-action="MarkAsPaid" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@item.MonthlyClaimId" />
+                                                <button type="submit" class="btn btn-success"
+                                                        title="Mark as Paid" onclick="return confirm('Mark claim #@item.MonthlyClaimId as paid?')">
+                                                    <i class="fas fa-check-circle"></i> Pay
+                                                </button>
+                                            </form>
+                                            @if (!string.IsNullOrEmpty(item.SupportingDocumentPath))
+                                            {
+                                                <a class="btn btn-outline-secondary" asp-action="DownloadDocument" asp-route-id="@item.MonthlyClaimId"
+                                                   title="Download Document">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">Payment Summary</h6>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Total Claims:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                @Model.Count()
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Total Amount:</strong>
+                            </div>
+                            <div class="col-6 text-end text-success fw-bold">
+                                R @Model.Sum(c => c.HoursWorked * c.HourlyRate).ToString("N2")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            <a class="btn btn-primary" asp-action="GenerateReport">
+                                <i class="fas fa-file-export me-2"></i>Export to Excel
+                            </a>
+                            <button class="btn btn-outline-secondary" onclick="printTable()">
+                                <i class="fas fa-print me-2"></i>Print Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function printTable() {
+            window.print();
+        }
+
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+    </script>
+}
